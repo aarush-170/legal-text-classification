@@ -24,7 +24,8 @@ from src.evaluate import compute_metrics, save_run
 
 MODELS_DIR = ROOT / "models"
 CS = [1, 10, 100]
-
+DOC2VEC_DIMS = [100, 200]
+DOC2VEC_DMS = [0, 1]
 
 def _fit_lr_grid(Xtr, ytr, Xdv, ydv, Cs):
     best = {"macro_f1": -1.0}
@@ -76,30 +77,138 @@ def run_doc2vec(dataset: str, quick: bool = False, workers: int = 4, dim: int = 
     tr, dv, te = _splits(dataset, quick)
     if quick:
         epochs = 3
+
     ttr, tdv, tte = _tok(tr.text), _tok(dv.text), _tok(te.text)
-    t0 = time.time()
-    model = Doc2Vec(vector_size=dim, min_count=5, epochs=epochs, workers=workers, seed=SEED, dm=1)
-    model.build_vocab([TaggedDocument(w, [i]) for i, w in enumerate(ttr)])
-    model.train([TaggedDocument(w, [i]) for i, w in enumerate(ttr)],
-                total_examples=model.corpus_count, epochs=model.epochs)
-    print(f"[doc2vec] trained dim={dim} epochs={epochs} in {time.time()-t0:.0f}s")
-    Xtr = np.vstack([model.dv[i] for i in range(len(ttr))])
-    t0 = time.time()
-    Xdv = np.vstack([model.infer_vector(w) for w in tdv])
-    Xte = np.vstack([model.infer_vector(w) for w in tte])
-    print(f"[doc2vec] inferred dev/test vectors in {time.time()-t0:.0f}s")
-    best = _fit_lr_grid(Xtr, tr.label, Xdv, dv.label, [10] if quick else CS)
-    pred = best["clf"].predict(Xte)
+
+    best_overall = {"macro_f1": -1.0}
+
+    dims = [dim] if quick else DOC2VEC_DIMS
+    dms = [1] if quick else DOC2VEC_DMS
+
+    for current_dim in dims:
+        for current_dm in dms:
+            print(f"[doc2vec] trying dim={current_dim}, dm={current_dm}")
+
+            t0 = time.time()
+            model = Doc2Vec(
+                vector_size=current_dim,
+                min_count=5,
+                epochs=epochs,
+                workers=workers,
+                seed=SEED,
+                dm=current_dm,
+            )
+
+            tagged_train = [
+                TaggedDocument(w, [i])
+                for i, w in enumerate(ttr)
+            ]
+
+            model.build_vocab(tagged_train)
+            model.train(
+                tagged_train,
+                total_examples=model.corpus_count,
+                epochs=model.epochs,
+            )
+
+            print(
+                f"[doc2vec] trained dim={current_dim} "
+                f"dm={current_dm} epochs={epochs} "
+                f"in {time.time() - t0:.0f}s"
+            )
+
+            Xtr = np.vstack([
+                model.dv[i] for i in range(len(ttr))
+            ])
+
+            t0 = time.time()
+
+            Xdv = np.vstack([
+                model.infer_vector(w) for w in tdv
+            ])
+
+            Xte = np.vstack([
+                model.infer_vector(w) for w in tte
+            ])
+
+            print(
+                f"[doc2vec] inferred dev/test vectors "
+                f"in {time.time() - t0:.0f}s"
+            )
+
+            lr_best = _fit_lr_grid(
+                Xtr,
+                tr.label,
+                Xdv,
+                dv.label,
+                [10] if quick else CS,
+            )
+
+            print(
+                f"[doc2vec] dim={current_dim} "
+                f"dm={current_dm} "
+                f"best C={lr_best['C']} "
+                f"dev macro-F1={lr_best['macro_f1']:.4f}"
+            )
+
+            if lr_best["macro_f1"] > best_overall["macro_f1"]:
+                best_overall = {
+                    **lr_best,
+                    "model": model,
+                    "dim": current_dim,
+                    "dm": current_dm,
+                }
+
+    model = best_overall["model"]
+    Xte = np.vstack([
+        model.infer_vector(w) for w in tte
+    ])
+    pred = best_overall["clf"].predict(Xte)
     test_m = compute_metrics(te.label, pred)
-    print(f"[doc2vec] best on dev: C={best['C']}\n[doc2vec] TEST: {test_m}")
+
+    print(
+        f"[doc2vec] best on dev: "
+        f"dim={best_overall['dim']} "
+        f"dm={best_overall['dm']} "
+        f"C={best_overall['C']}"
+    )
+    print(f"[doc2vec] TEST: {test_m}")
+
     if not quick:
         MODELS_DIR.mkdir(exist_ok=True)
-        model.save(str(MODELS_DIR / f"{dataset}_doc2vec.model"))
-        joblib.dump(best["clf"], MODELS_DIR / f"{dataset}_doc2vec_lr.joblib")
-        dev_m = {k: best[k] for k in ("accuracy", "macro_f1", "micro_f1")}
-        save_run(dataset, "doc2vec_lr", dev_m, test_m, te.label.values, pred,
-                 extra={"best_params": {"C": best["C"], "dim": dim, "epochs": epochs}, "seed": SEED, "workers": workers})
 
+        model.save(
+            str(MODELS_DIR / f"{dataset}_doc2vec.model")
+        )
+
+        joblib.dump(
+            best_overall["clf"],
+            MODELS_DIR / f"{dataset}_doc2vec_lr.joblib"
+        )
+
+        dev_m = {
+            k: best_overall[k]
+            for k in ("accuracy", "macro_f1", "micro_f1")
+        }
+
+        save_run(
+            dataset,
+            "doc2vec_lr",
+            dev_m,
+            test_m,
+            te.label.values,
+            pred,
+            extra={
+                "best_params": {
+                    "C": best_overall["C"],
+                    "dim": best_overall["dim"],
+                    "dm": best_overall["dm"],
+                    "epochs": epochs,
+                },
+                "seed": SEED,
+                "workers": workers,
+            },
+        )
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
