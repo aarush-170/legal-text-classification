@@ -1,2 +1,4 @@
 model,test_accuracy,test_macro_f1,test_micro_f1,dev_accuracy,dev_macro_f1,dev_micro_f1
+doc2vec_lr,0.6229,0.4539,0.6229,0.6693,0.5477,0.6693
+lda_lr,0.6307,0.4149,0.6307,0.6664,0.5036,0.6664
 tfidf_lr,0.7379,0.6278,0.7379,0.7914,0.7166,0.7914
