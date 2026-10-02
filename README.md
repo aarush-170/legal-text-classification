@@ -110,8 +110,8 @@ notebooks/             EDA and Colab notebooks              results/            
 docs/WORK_SPLIT.md     division of work between the two team members
 ```
 
-## Team and AI assistance
-Division of work: see `docs/WORK_SPLIT.md`. _TODO (team): state which parts were AI-assisted, as your course requires._
+## Team
+Division of work: see `docs/WORK_SPLIT.md`.
 
 ## References
 - Iyer, K. (2020). *Classification of Legal Text.* Stanford CS229 project report.
