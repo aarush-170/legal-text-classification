@@ -55,9 +55,14 @@ def chunk_documents(texts, tok, max_len: int = 512, max_chunks: int = 16, sampli
 def _batches(chunks, order, bs, tok, device):
     for i in range(0, len(order), bs):
         idx = order[i:i + bs]
-        feats = [tok.build_inputs_with_special_tokens(chunks[j]) for j in idx]
-        batch = tok.pad({"input_ids": feats}, return_tensors="pt")
-        yield idx, {k: v.to(device) for k, v in batch.items()}
+        feats = [[tok.cls_token_id] + list(chunks[j]) + [tok.sep_token_id] for j in idx]
+        width = max(len(f) for f in feats)
+        ids = torch.full((len(feats), width), tok.pad_token_id, dtype=torch.long)
+        mask = torch.zeros((len(feats), width), dtype=torch.long)
+        for r, f in enumerate(feats):
+            ids[r, :len(f)] = torch.tensor(f)
+            mask[r, :len(f)] = 1
+        yield idx, {"input_ids": ids.to(device), "attention_mask": mask.to(device)}
 
 
 @torch.no_grad()
