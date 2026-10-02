@@ -1,0 +1,9 @@
+model,test_micro_f1,test_macro_f1,source
+TFIDF-SVM,74.0,64.4,"Chalkidis et al. 2022 (ACL), Table 3"
+BERT (hierarchical),68.3,58.3,"Chalkidis et al. 2022 (ACL), Table 3"
+RoBERTa (hierarchical),71.6,62.0,"Chalkidis et al. 2022 (ACL), Table 3"
+DeBERTa (hierarchical),71.1,62.7,"Chalkidis et al. 2022 (ACL), Table 3"
+Longformer,72.9,64.0,"Chalkidis et al. 2022 (ACL), Table 3"
+BigBird,72.8,62.0,"Chalkidis et al. 2022 (ACL), Table 3"
+Legal-BERT (hierarchical),76.4,66.5,"Chalkidis et al. 2022 (ACL), Table 3"
+CaseLaw-BERT (hierarchical),76.6,65.9,"Chalkidis et al. 2022 (ACL), Table 3"
