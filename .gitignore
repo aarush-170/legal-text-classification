@@ -12,3 +12,5 @@ __pycache__/
 venv/
 .env
 .DS_Store
+colab_upload.zip
+colab_outputs.zip
