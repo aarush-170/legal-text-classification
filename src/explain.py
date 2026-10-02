@@ -92,7 +92,11 @@ class Retriever:
 
 class Explainer:
     def __init__(self, dataset: str = "scotus", retrieval: str = "auto"):
-        bundle = joblib.load(MODELS_DIR / f"{dataset}_tfidf_lr.joblib")  # {"vec", "clf"}
+        model_path = MODELS_DIR / f"{dataset}_tfidf_lr.joblib"
+        if not model_path.exists():
+            raise FileNotFoundError(f"{model_path} not found. Create it first with: "
+                                    f"python -m src.baselines --dataset {dataset} --model tfidf  (about 6 min)")
+        bundle = joblib.load(model_path)  # {"vec", "clf"}
         self.vec, self.clf, self.dataset = bundle["vec"], bundle["clf"], dataset
         self.names = display_names(dataset)
         self.retriever = Retriever(dataset, self.vec, retrieval)
