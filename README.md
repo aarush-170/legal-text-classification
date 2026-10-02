@@ -53,7 +53,7 @@ multi-class data.
 | LDA (100 topics) + LR | 0.631 | 0.415 | 0.631 | |
 | Doc2Vec (dim 100) + LR | 0.623 | 0.454 | 0.623 | 4 threads, not bit-exact |
 | TF-IDF (unigrams) + LR | **0.738** | **0.628** | **0.738** | balanced class weights, C=100 |
-| Legal-BERT embeddings + LR | _TODO: Colab_ | _TODO_ | _TODO_ | |
+| Legal-BERT embeddings + LR | 0.668 | 0.565 | 0.668 | frozen encoder, mean of <=16 chunks, balanced LR, C=10 |
 | Legal-BERT fine-tuned (chunked) | _TODO: Colab_ | _TODO_ | _TODO_ | |
 
 ### Comparison with published LexGLUE results
@@ -72,7 +72,12 @@ Our TF-IDF + LR (73.8 / 62.8) is close to the paper's TFIDF-SVM. The comparison 
   (0.85); weak on Federalism (0.29), Privacy (0.42) and Miscellaneous (0.00, only 3 test opinions).
 - **Label noise:** SCDB issue areas overlap (e.g. immigration cases appear under both Civil Rights and Criminal
   Procedure), so some "errors" are defensible predictions.
-- _TODO after Colab: does chunked Legal-BERT beat TF-IDF, and which classes improve?_
+- **Frozen Legal-BERT embeddings (mean of chunk embeddings) + LR** score 0.668 accuracy / 0.565 macro-F1: better than
+  Doc2Vec and LDA (about +4 accuracy, +11 macro-F1 over Doc2Vec/LDA) but below TF-IDF. Per class (test F1, TF-IDF -> Legal-BERT):
+  it helps the hard classes **Federalism 0.29 -> 0.46** and **Privacy 0.42 -> 0.54**, but hurts others, notably
+  **Unions 0.76 -> 0.33** (precision 0.21: many opinions are over-predicted as Unions) and Interstate Relations
+  0.85 -> 0.67. Averaging frozen chunk embeddings seems to blur the rare, topic-specific terms TF-IDF keeps.
+- _TODO after Colab fine-tune: does chunked fine-tuned Legal-BERT beat TF-IDF?_
 
 ## Demo (`app/app.py`)
 Paste an opinion (or load a random test opinion) to get:
