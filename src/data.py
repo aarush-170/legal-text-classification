@@ -53,6 +53,21 @@ def label_names(dataset: str) -> list[str]:
     return sorted(names, key=int) if all(n.isdigit() for n in names) else sorted(names)
 
 
+# SCDB issueArea codes (http://scdb.wustl.edu/documentation.php?var=issueArea). LexGLUE SCOTUS uses codes 1-13
+# (14 "Private Action" never occurs), so class id i <-> SCDB code label_names("scotus")[i].
+SCDB_ISSUE_AREAS = {
+    "1": "Criminal Procedure", "2": "Civil Rights", "3": "First Amendment", "4": "Due Process",
+    "5": "Privacy", "6": "Attorneys", "7": "Unions", "8": "Economic Activity", "9": "Judicial Power",
+    "10": "Federalism", "11": "Interstate Relations", "12": "Federal Taxation", "13": "Miscellaneous",
+}
+
+
+def display_names(dataset: str) -> list[str]:
+    """Human-readable class names indexed by class id."""
+    names = label_names(dataset)
+    return [SCDB_ISSUE_AREAS[n] for n in names] if dataset == "scotus" else names
+
+
 def load_split(dataset: str, split: str, clean: bool = True) -> pd.DataFrame:
     """Return a DataFrame with columns `text`, `label` (int id) and `label_name`."""
     if split not in SPLITS:
