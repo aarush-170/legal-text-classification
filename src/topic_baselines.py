@@ -160,11 +160,9 @@ def run_doc2vec(dataset: str, quick: bool = False, workers: int = 4, dim: int = 
                 }
 
     model = best_overall["model"]
-
     Xte = np.vstack([
         model.infer_vector(w) for w in tte
     ])
-
     pred = best_overall["clf"].predict(Xte)
     test_m = compute_metrics(te.label, pred)
 

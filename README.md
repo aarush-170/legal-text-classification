@@ -112,7 +112,8 @@ docs/WORK_SPLIT.md     division of work between the two team members
 
 ## Team
 Division of work: see `docs/WORK_SPLIT.md`.
-
+## Team and AI assistance
+Aarohi Jaiswal used AI assistance during development to help understand the existing codebase, implement and debug Doc2Vec hyperparameter tuning, improve explanation and retrieval functionality, enhance the Gradio demo, and add the required EDA analyses. All AI-assisted changes were reviewed, run, and validated before being committed.
 ## References
 - Iyer, K. (2020). *Classification of Legal Text.* Stanford CS229 project report.
 - Chalkidis, I., et al. (2022). *LexGLUE: A Benchmark Dataset for Legal Language Understanding in English.* ACL 2022.
