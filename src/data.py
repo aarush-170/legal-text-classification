@@ -42,15 +42,32 @@ def clean_text(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+def label_names(dataset: str) -> list[str]:
+    """Class names in a fixed order (numeric order if all names are digits, else alphabetical).
+
+    The lighteval parquet stores each row's label as a string in `gold` and the full
+    class list in `references`; we derive the id mapping from the train split.
+    """
+    df = pd.read_parquet(_path(dataset, "train"), columns=["references"])
+    names = [str(x) for x in df["references"].iloc[0]]
+    return sorted(names, key=int) if all(n.isdigit() for n in names) else sorted(names)
+
+
 def load_split(dataset: str, split: str, clean: bool = True) -> pd.DataFrame:
-    """Return a DataFrame with columns `text` and `label` (int)."""
+    """Return a DataFrame with columns `text`, `label` (int id) and `label_name`."""
     if split not in SPLITS:
         raise ValueError(f"split must be one of {SPLITS}")
     path = _path(dataset, split)
     if not path.exists():
         download(dataset)
-    df = pd.read_parquet(path)
-    df = df[["text", "label"]].copy()
+    raw = pd.read_parquet(path, columns=["input", "gold"])
+    names = label_names(dataset)
+    ids = {n: i for i, n in enumerate(names)}
+    df = pd.DataFrame({
+        "text": raw["input"],
+        "label_name": [str(g[0]) for g in raw["gold"]],
+    })
+    df["label"] = df["label_name"].map(ids).astype(int)
     if clean:
         df["text"] = df["text"].map(clean_text)
     return df.reset_index(drop=True)
