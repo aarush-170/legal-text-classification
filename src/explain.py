@@ -58,6 +58,9 @@ class Retriever:
                 sp.save_npz(cache, self.matrix)
         else:
             e = np.load(emb_path)["train"]
+            # mean-pooled BERT embeddings share a big common component (cosines all ~0.99): centre on the train mean
+            self.mean = e.mean(0)
+            e = e - self.mean
             self.matrix = e / np.maximum(np.linalg.norm(e, axis=1, keepdims=True), 1e-9)
             self._tok = self._model = self._device = None
 
@@ -73,7 +76,7 @@ class Retriever:
             self._tok.model_max_length = int(1e9)
             self._model = AutoModel.from_pretrained(MODEL_NAME).to(self._device)
         ch, di = chunk_documents([text], self._tok)  # same chunking defaults as the stored train embeddings
-        q = mean_by_doc(encode(ch, self._model, self._tok, self._device, 8, "embed"), di, 1)[0]
+        q = mean_by_doc(encode(ch, self._model, self._tok, self._device, 8, "embed"), di, 1)[0] - self.mean
         return q / max(np.linalg.norm(q), 1e-9)
 
     def top_k(self, text: str, k: int = 5) -> list[dict]:

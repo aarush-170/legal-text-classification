@@ -52,14 +52,15 @@ multi-class data.
 |---|---|---|---|---|
 | LDA (100 topics) + LR | 0.631 | 0.415 | 0.631 | |
 | Doc2Vec (dim 100) + LR | 0.623 | 0.454 | 0.623 | 4 threads, not bit-exact |
-| TF-IDF (unigrams) + LR | **0.738** | **0.628** | **0.738** | balanced class weights, C=100 |
+| TF-IDF (unigrams) + LR | 0.738 | 0.628 | 0.738 | balanced class weights, C=100 |
 | Legal-BERT embeddings + LR | 0.668 | 0.565 | 0.668 | frozen encoder, mean of <=16 chunks, balanced LR, C=10 |
-| Legal-BERT fine-tuned (chunked) | _TODO: Colab_ | _TODO_ | _TODO_ | |
+| **Legal-BERT fine-tuned (chunked)** | **0.754** | **0.654** | **0.754** | 3 epochs, lr 2e-5, <=16 chunks/opinion, mean of chunk logits (Colab) |
 
 ### Comparison with published LexGLUE results
 From Chalkidis et al. (2022), Table 3, SCOTUS (micro-F1 / macro-F1, %; see `results/lexglue_published_scotus.csv`):
 TFIDF-SVM 74.0 / 64.4; Legal-BERT (hierarchical) 76.4 / 66.5; CaseLaw-BERT (hierarchical) 76.6 / 65.9.
-Our TF-IDF + LR (73.8 / 62.8) is close to the paper's TFIDF-SVM. The comparison is indicative, not like-for-like
+Our TF-IDF + LR (73.8 / 62.8) is close to the paper's TFIDF-SVM, and our chunked fine-tuned Legal-BERT (75.4 / 65.4) lands just
+below the paper's hierarchical Legal-BERT (76.4 / 66.5). The comparison is indicative, not like-for-like
 (different preprocessing, classifier, and the paper averages neural models over seeds).
 
 ### Analysis
@@ -77,7 +78,16 @@ Our TF-IDF + LR (73.8 / 62.8) is close to the paper's TFIDF-SVM. The comparison 
   it helps the hard classes **Federalism 0.29 -> 0.46** and **Privacy 0.42 -> 0.54**, but hurts others, notably
   **Unions 0.76 -> 0.33** (precision 0.21: many opinions are over-predicted as Unions) and Interstate Relations
   0.85 -> 0.67. Averaging frozen chunk embeddings seems to blur the rare, topic-specific terms TF-IDF keeps.
-- _TODO after Colab fine-tune: does chunked fine-tuned Legal-BERT beat TF-IDF?_
+- **Chunked fine-tuned Legal-BERT is the best model on test** (0.754 accuracy / 0.654 macro-F1 vs TF-IDF 0.738 / 0.628),
+  and the chunking works around the 512-token limit that made plain BERT run out of memory in the CS229 report.
+  **But the margin is small:** dev scores are essentially tied (0.792 vs 0.791 accuracy; 0.718 vs 0.717 macro-F1),
+  it is a single seed, and with 1,400 test opinions a 1.6-point accuracy difference is within sampling noise, so we
+  do not claim a significant win. Per class (test F1, TF-IDF -> fine-tuned) it helps Attorneys 0.69 -> 0.79,
+  Federal Taxation 0.78 -> 0.86, Due Process 0.56 -> 0.63 and Civil Rights 0.72 -> 0.77, and does not fix
+  Federalism (0.29 -> 0.25) or Miscellaneous (0.00, 3 test opinions).
+- **Retrieval check (dev, precision@5 = share of the 5 nearest training opinions with the query's true label):**
+  TF-IDF 0.678 vs mean-centred frozen Legal-BERT embeddings 0.636. The demo uses Legal-BERT embeddings by default
+  (`--retrieval tfidf` switches); label agreement is a coarse proxy for similarity quality.
 
 ## Demo (`app/app.py`)
 Paste an opinion (or load a random test opinion) to get:
