@@ -1,0 +1,2 @@
+model,test_accuracy,test_macro_f1,test_micro_f1,dev_accuracy,dev_macro_f1,dev_micro_f1
+tfidf_lr,0.7379,0.6278,0.7379,0.7914,0.7166,0.7914

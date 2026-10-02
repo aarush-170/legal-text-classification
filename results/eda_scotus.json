@@ -1,0 +1,107 @@
+{
+  "dataset": "scotus",
+  "split_sizes": {
+    "train": 5000,
+    "validation": 1400,
+    "test": 1400
+  },
+  "n_classes_observed": 13,
+  "labels_observed": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "label_distribution": {
+    "train": {
+      "0": 1011,
+      "1": 811,
+      "2": 423,
+      "3": 193,
+      "4": 45,
+      "5": 35,
+      "6": 255,
+      "7": 1043,
+      "8": 717,
+      "9": 191,
+      "10": 53,
+      "11": 220,
+      "12": 3
+    },
+    "validation": {
+      "0": 360,
+      "1": 218,
+      "2": 108,
+      "3": 70,
+      "4": 22,
+      "5": 35,
+      "6": 51,
+      "7": 226,
+      "8": 165,
+      "9": 83,
+      "10": 14,
+      "11": 38,
+      "12": 10
+    },
+    "test": {
+      "0": 372,
+      "1": 222,
+      "2": 88,
+      "3": 51,
+      "4": 28,
+      "5": 17,
+      "6": 24,
+      "7": 260,
+      "8": 200,
+      "9": 83,
+      "10": 15,
+      "11": 37,
+      "12": 3
+    }
+  },
+  "majority_class_share_test": 0.26571428571428574,
+  "length_stats": {
+    "train": {
+      "words_mean": 5853.5638,
+      "words_median": 4364.5,
+      "words_p95": 16168.500000000002,
+      "words_max": 88566,
+      "words_min": 19,
+      "chars_mean": 35395.158
+    },
+    "validation": {
+      "words_mean": 8625.858571428571,
+      "words_median": 7591.0,
+      "words_p95": 19719.399999999998,
+      "words_max": 38098,
+      "words_min": 38,
+      "chars_mean": 53327.10214285714
+    },
+    "test": {
+      "words_mean": 8687.857857142857,
+      "words_median": 6883.0,
+      "words_p95": 21075.6,
+      "words_max": 89379,
+      "words_min": 39,
+      "chars_mean": 53949.24571428572
+    }
+  },
+  "empty_texts": {
+    "train": 0,
+    "validation": 0,
+    "test": 0
+  },
+  "train_dev_test_overlap": {
+    "train&test": 0,
+    "train&validation": 0
+  }
+}
