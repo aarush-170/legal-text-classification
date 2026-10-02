@@ -1,0 +1,16 @@
+# Core (steps 1-3: data, EDA, baselines)
+numpy
+pandas
+pyarrow
+scikit-learn
+scipy
+matplotlib
+seaborn
+joblib
+gensim            # LDA + Doc2Vec baselines
+# Transformer + demo (steps 4-5); torch is preinstalled on Colab
+torch
+transformers
+huggingface_hub
+tqdm
+gradio
